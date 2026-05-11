@@ -1,0 +1,1333 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A 股深度复盘 — 2026-05-08</title>
+<style>
+/* ============================================================
+   a-share-color-psychologist: 情绪蒸馏 + 风格注入
+   Market state: 结构分化 (structural divergence)
+   - 沪指 -0.00% (平), 创业板 -0.96%, 科创50 -2.29%, 北证50 +2.24%
+   - 涨跌比 2.10, 平均涨幅 +0.99%
+   - 情绪状态: 活跃偏强，结构分化
+
+   Volatility: 板块间分化大 (军工+3.31% vs 半导体-0.01%净流出140亿)
+   -> blur: 20px (中度模糊, 聚焦核心数字)
+
+   Color assignments by sector:
+   - 军工/航天: Steel Blue border
+   - 人形机器人/AI/通信: Cyber Blue
+   - 消费电子: Cyber Blue
+   - 贵金属: Classic Gold
+   - 半导体/电池(流出): Teal/Green tint (冷静)
+
+   Overall palette:
+   - Background: Deep navy-gray with warm undertones
+   - Accent: Aurora Red (due to strong breadth despite flat index)
+   - Glass: High-transparency frosted glass
+   ============================================================ */
+
+:root {
+  /* Market state: 结构分化偏强 — 晨曦红基调 + 禅意灰背景 */
+  --bg-primary: #0a0e1a;
+  --bg-secondary: #111827;
+  --bg-card: rgba(255, 255, 255, 0.06);
+  --bg-card-hover: rgba(255, 255, 255, 0.10);
+
+  /* Aurora Red accent — 温和偏强, 生命力 */
+  --accent-primary: #ff6b4a;
+  --accent-secondary: #ff8a6f;
+  --accent-glow: rgba(255, 107, 74, 0.15);
+  --accent-subtle: rgba(255, 107, 74, 0.08);
+
+  /* Glass effects */
+  --apple-glass: rgba(255, 255, 255, 0.07);
+  --apple-glass-heavy: rgba(255, 255, 255, 0.12);
+  --apple-radius: 28px;
+  --apple-radius-sm: 16px;
+  --apple-font: -apple-system, "PingFang SC", "SF Pro Display", "Helvetica Neue", sans-serif;
+  --apple-tracking: 0.02em;
+  --apple-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  --page-transition: 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+
+  /* Volatility-based blur */
+  --glass-blur: blur(20px) saturate(160%);
+
+  /* Section accent colors for sector identification */
+  --sector-military: rgba(70, 130, 180, 0.15);
+  --sector-military-border: rgba(70, 130, 180, 0.4);
+  --sector-tech: rgba(0, 122, 255, 0.12);
+  --sector-tech-border: rgba(0, 122, 255, 0.35);
+  --sector-gold: rgba(212, 175, 55, 0.10);
+  --sector-gold-border: rgba(212, 175, 55, 0.3);
+  --sector-teal: rgba(0, 150, 136, 0.08);
+  --sector-teal-border: rgba(0, 150, 136, 0.25);
+
+  /* Text colors */
+  --text-primary: #f0f0f4;
+  --text-secondary: rgba(240, 240, 244, 0.7);
+  --text-tertiary: rgba(240, 240, 244, 0.45);
+
+  /* Up/down */
+  --up-color: #ff4d4d;
+  --up-bg: rgba(255, 77, 77, 0.12);
+  --down-color: #4caf7d;
+  --down-bg: rgba(76, 175, 125, 0.12);
+  --flat-color: rgba(240, 240, 244, 0.6);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  scroll-snap-type: y mandatory;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  font-family: var(--apple-font);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  letter-spacing: var(--apple-tracking);
+  line-height: 1.6;
+}
+
+/* Full-screen slides */
+.slide {
+  min-height: 100vh;
+  height: auto;
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 60px 8%;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Background ambient gradients */
+.slide::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: radial-gradient(ellipse at 20% 50%, rgba(255, 107, 74, 0.04) 0%, transparent 70%),
+              radial-gradient(ellipse at 80% 20%, rgba(0, 122, 255, 0.03) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.slide > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Section enter animation */
+.section-enter {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all var(--page-transition);
+}
+
+.section-enter.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Slide indicator */
+.slide-number {
+  position: absolute;
+  bottom: 30px;
+  right: 8%;
+  font-size: 14px;
+  color: var(--text-tertiary);
+  letter-spacing: 0.1em;
+  z-index: 2;
+}
+
+/* Navigation dots */
+.nav-dots {
+  position: fixed;
+  right: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 100;
+}
+
+.nav-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.nav-dot:hover,
+.nav-dot.active {
+  background: var(--accent-primary);
+  transform: scale(1.3);
+}
+
+/* Title slide */
+.title-slide {
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+}
+
+.title-slide h1 {
+  font-size: 56px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin-bottom: 16px;
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.title-slide .date {
+  font-size: 20px;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+
+.title-slide .subtitle {
+  font-size: 18px;
+  color: var(--text-tertiary);
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.8;
+}
+
+.title-slide .tagline {
+  display: inline-block;
+  padding: 8px 24px;
+  border-radius: 100px;
+  background: var(--accent-subtle);
+  color: var(--accent-primary);
+  font-size: 14px;
+  margin-top: 24px;
+  letter-spacing: 0.05em;
+}
+
+/* Section title */
+.section-title {
+  font-size: 36px;
+  font-weight: 700;
+  margin-bottom: 32px;
+  letter-spacing: -0.01em;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--accent-subtle);
+  display: inline-block;
+}
+
+.section-title .num {
+  color: var(--accent-primary);
+  margin-right: 12px;
+}
+
+/* Card grid layout */
+.card-grid {
+  display: grid;
+  gap: 20px;
+}
+
+.card-grid-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.card-grid-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.card-grid-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+/* Glass card */
+.card {
+  background: var(--bg-card);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-radius: var(--apple-radius);
+  padding: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  background: var(--bg-card-hover);
+  transform: translateY(-2px);
+}
+
+.card h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--text-secondary);
+}
+
+.card .value {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.card .sublabel {
+  font-size: 13px;
+  color: var(--text-tertiary);
+}
+
+/* Card with sector accent */
+.card-sectors {
+  position: relative;
+  overflow: hidden;
+}
+
+.card-sectors::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  border-radius: 2px 0 0 2px;
+}
+
+.card.military::after { background: var(--sector-military-border); }
+.card.tech::after { background: var(--sector-tech-border); }
+.card.gold::after { background: var(--sector-gold-border); }
+.card.teal::after { background: var(--sector-teal-border); }
+
+/* Table styles */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+table th {
+  text-align: left;
+  padding: 12px 16px;
+  color: var(--text-tertiary);
+  font-weight: 500;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+table tr:last-child td {
+  border-bottom: none;
+}
+
+table tr:hover td {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* up/down colors */
+.up { color: var(--up-color); }
+.down { color: var(--down-color); }
+.flat { color: var(--flat-color); }
+
+.up-bg { background: var(--up-bg); }
+.down-bg { background: var(--down-bg); }
+
+.badge-up {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 4px;
+  background: var(--up-bg);
+  color: var(--up-color);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.badge-down {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 4px;
+  background: var(--down-bg);
+  color: var(--down-color);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.badge-flat {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 4px;
+  background: rgba(240, 240, 244, 0.06);
+  color: var(--flat-color);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Event cards */
+.event-item {
+  background: var(--bg-card);
+  border-radius: var(--apple-radius-sm);
+  padding: 16px 20px;
+  margin-bottom: 12px;
+  border-left: 3px solid var(--accent-primary);
+}
+
+.event-item .event-title {
+  font-weight: 600;
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+
+.event-item .event-meta {
+  font-size: 13px;
+  color: var(--text-tertiary);
+}
+
+.event-item .event-link {
+  color: var(--accent-secondary);
+  text-decoration: none;
+  font-size: 13px;
+}
+
+.event-item .event-link:hover {
+  text-decoration: underline;
+}
+
+/* Strength indicator */
+.stars {
+  display: inline-block;
+  color: var(--accent-primary);
+  font-size: 14px;
+  letter-spacing: 2px;
+}
+
+/* Chip */
+.chip {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 500;
+  margin: 2px;
+}
+
+.chip-positive {
+  background: var(--up-bg);
+  color: var(--up-color);
+}
+
+.chip-negative {
+  background: var(--down-bg);
+  color: var(--down-color);
+}
+
+.chip-neutral {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-secondary);
+}
+
+.chip-primary {
+  background: var(--accent-subtle);
+  color: var(--accent-primary);
+}
+
+/* Summary tags */
+.tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+/* Highlight box */
+.highlight-box {
+  background: linear-gradient(135deg, var(--accent-subtle), transparent);
+  border-radius: var(--apple-radius);
+  padding: 20px 24px;
+  margin-top: 16px;
+  border: 1px solid rgba(255, 107, 74, 0.1);
+}
+
+.highlight-box .hl-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent-primary);
+  margin-bottom: 6px;
+}
+
+/* Key value display */
+.key-value {
+  display: flex;
+  flex-direction: column;
+}
+
+.key-value .kv-label {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.key-value .kv-value {
+  font-size: 26px;
+  font-weight: 700;
+}
+
+/* Index block */
+.index-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 20px;
+}
+
+.index-block .index-name {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.index-block .index-price {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+/* Priority table */
+.priority-table th:first-child,
+.priority-table td:first-child {
+  width: 60px;
+}
+
+.priority-p0 {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--up-bg);
+  color: var(--up-color);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.priority-p1 {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgba(255, 193, 7, 0.15);
+  color: #ffc107;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.priority-p2 {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* Flow bar */
+.flow-bar {
+  display: flex;
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 6px;
+}
+
+.flow-bar-inflow {
+  background: var(--up-color);
+  height: 100%;
+}
+
+.flow-bar-outflow {
+  background: var(--down-color);
+  height: 100%;
+}
+
+/* Divider */
+.section-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+  margin: 16px 0;
+}
+
+/* Scroll hint */
+.scroll-hint {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  animation: bounce 2s infinite;
+  z-index: 2;
+}
+
+.scroll-hint .arrow {
+  font-size: 20px;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(8px); }
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .card-grid-2 { grid-template-columns: 1fr; }
+  .card-grid-3 { grid-template-columns: 1fr; }
+  .card-grid-4 { grid-template-columns: repeat(2, 1fr); }
+  .slide { padding: 40px 5%; }
+  .title-slide h1 { font-size: 36px; }
+  .section-title { font-size: 28px; }
+  .nav-dots { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- Navigation Dots -->
+<nav class="nav-dots" id="navDots"></nav>
+
+<!-- ===== SLIDE 1: TITLE ===== -->
+<section class="slide title-slide" data-slide="0">
+  <div class="section-enter active">
+    <div class="tagline">MyFinanceAgent 深度复盘</div>
+    <h1>结构分化 强者恒强</h1>
+    <p class="date">2026年5月8日（周五）</p>
+    <p class="subtitle">军工/机器人/商业航天三线爆发，科创50领跌2.29%<br>成交额连续三日突破3万亿，全市场3636家上涨</p>
+    <div class="tag-row" style="justify-content:center;">
+      <span class="chip chip-positive">+3.31% 军工装备</span>
+      <span class="chip chip-positive">132 涨停</span>
+      <span class="chip chip-positive">2.10 涨跌比</span>
+      <span class="chip chip-neutral">3.07万亿 成交</span>
+    </div>
+  </div>
+  <div class="scroll-hint">
+    <span>向下滑动</span>
+    <span class="arrow">&#8595;</span>
+  </div>
+  <div class="slide-number">01 / 09</div>
+</section>
+
+<!-- ===== SLIDE 2: INDEX OVERVIEW ===== -->
+<section class="slide" data-slide="1">
+  <div class="section-enter">
+    <div class="section-title"><span class="num">01</span>指数全景</div>
+
+    <!-- Index cards -->
+    <div class="card-grid" style="grid-template-columns: repeat(5, 1fr); gap: 16px;">
+      <div class="card index-block">
+        <div class="index-name">上证指数</div>
+        <div class="index-price">4179.95</div>
+        <div class="badge-flat">-0.00%</div>
+      </div>
+      <div class="card index-block">
+        <div class="index-name">深证成指</div>
+        <div class="index-price">15563.80</div>
+        <div class="badge-down">-0.50%</div>
+      </div>
+      <div class="card index-block">
+        <div class="index-name">创业板指</div>
+        <div class="index-price">3796.13</div>
+        <div class="badge-down">-0.96%</div>
+      </div>
+      <div class="card index-block">
+        <div class="index-name">科创50</div>
+        <div class="index-price">1640.46</div>
+        <div class="badge-down">-2.29%</div>
+      </div>
+      <div class="card index-block" style="border-color: var(--sector-military-border);">
+        <div class="index-name">北证50</div>
+        <div class="index-price" style="color: var(--up-color);">1436.36</div>
+        <div class="badge-up">+2.24%</div>
+      </div>
+    </div>
+
+    <!-- Breadth stats -->
+    <div class="card-grid card-grid-4" style="margin-top: 20px;">
+      <div class="card">
+        <h3>上涨家数</h3>
+        <div class="key-value">
+          <div class="kv-value up">3,636</div>
+          <div class="sublabel">占比 66%</div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>下跌家数</h3>
+        <div class="key-value">
+          <div class="kv-value down">1,728</div>
+          <div class="sublabel">占比 31%</div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>成交额</h3>
+        <div class="key-value">
+          <div class="kv-value" style="color: var(--accent-primary);">30,752亿</div>
+          <div class="sublabel">连续3日 &gt; 3万亿</div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>平均涨幅</h3>
+        <div class="key-value">
+          <div class="kv-value up">+0.99%</div>
+          <div class="sublabel">中位数 +0.71%</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="highlight-box" style="margin-top: 16px;">
+      <div class="hl-title">核心判断</div>
+      <p style="color: var(--text-secondary);">结构分化极端。权重指数（上证）平收，但科创50重挫2.29%（半导体/电池拖累），北证50逆势大涨2.24%（中小盘活跃）。全市场3636家上涨说明下跌集中在少数大市值科技股。</p>
+    </div>
+  </div>
+  <div class="slide-number">02 / 09</div>
+</section>
+
+<!-- ===== SLIDE 3: NEWS ===== -->
+<section class="slide" data-slide="2">
+  <div class="section-enter">
+    <div class="section-title"><span class="num">02</span>新闻解读</div>
+
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+
+      <div class="event-item" style="border-left-color: var(--accent-primary);">
+        <div class="event-title">人形机器人概念全线爆发</div>
+        <div class="event-meta">近30股涨停 强度: <span class="stars">★★★★★</span></div>
+        <div style="font-size:13px;color:var(--text-tertiary);margin-top:4px;">
+          绿的谐波+14%, 恒锋工具+20%, 近30股涨超10%
+        </div>
+      </div>
+
+      <div class="event-item" style="border-left-color: var(--sector-military-border);">
+        <div class="event-title">四部门印发AI与能源双向赋能方案</div>
+        <div class="event-meta">29项重点任务 强度: <span class="stars">★★★★☆</span></div>
+        <div style="font-size:13px;color:var(--text-tertiary);margin-top:4px;">
+          算力设施绿色低碳转型 + 新型储能 + 绿电消纳
+        </div>
+      </div>
+
+      <div class="event-item" style="border-left-color: var(--sector-military-border);">
+        <div class="event-title">商业航天概念持续走高</div>
+        <div class="event-meta">十余股涨停 强度: <span class="stars">★★★★☆</span></div>
+        <div style="font-size:13px;color:var(--text-tertiary);margin-top:4px;">
+          工信部批复6G技术试验频率
+        </div>
+      </div>
+
+      <div class="event-item" style="border-left-color: var(--sector-teal-border);">
+        <div class="event-title">证监会查处两家财务造假公司</div>
+        <div class="event-meta">清越科技/元道通信锁定退市 强度: <span class="stars">★★★☆☆</span></div>
+        <div style="font-size:13px;color:var(--text-tertiary);margin-top:4px;">
+          强化严监管信号，利好市场生态
+        </div>
+      </div>
+
+      <div class="event-item" style="border-left-color: var(--sector-gold-border);">
+        <div class="event-title">国内成品油价格上调（年内第七涨）</div>
+        <div class="event-meta">95号汽油全面进入"9元时代" 强度: <span class="stars">★★★☆☆</span></div>
+        <div style="font-size:13px;color:var(--text-tertiary);margin-top:4px;">
+          汽油+320元/吨，柴油+310元/吨
+        </div>
+      </div>
+
+      <div class="event-item" style="border-left-color: var(--down-color);">
+        <div class="event-title">美股三大指数集体收跌</div>
+        <div class="event-meta">芯片股重挫 强度: <span class="stars">★★★☆☆</span></div>
+        <div style="font-size:13px;color:var(--text-tertiary);margin-top:4px;">
+          ARM跌超10%，短期通胀预期升至3.64%
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <div class="slide-number">03 / 09</div>
+</section>
+
+<!-- ===== SLIDE 4: MAIN THEMES ===== -->
+<section class="slide" data-slide="3">
+  <div class="section-enter">
+    <div class="section-title"><span class="num">03</span>主线分析</div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+
+      <!-- Theme 1: Military/Space -->
+      <div class="card card-sectors" style="position: relative; background: linear-gradient(135deg, var(--sector-military), transparent); border-left: 4px solid var(--sector-military-border);">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <h3 style="margin:0;">军工+商业航天</h3>
+          <span class="chip chip-positive">最强主线</span>
+        </div>
+        <div style="display:flex; gap: 24px; margin-top: 12px;">
+          <div class="key-value">
+            <div class="kv-label">板块净流入</div>
+            <div class="kv-value up">+51.71亿</div>
+          </div>
+          <div class="key-value">
+            <div class="kv-label">板块涨幅</div>
+            <div class="kv-value up">+3.31%</div>
+          </div>
+        </div>
+        <div style="margin-top: 8px; font-size: 13px; color: var(--text-secondary);">
+          电科蓝天(+20%) 航天发展(+10%) 航天环宇(+15%)
+        </div>
+        <div class="section-divider"></div>
+        <div style="font-size: 12px; color: var(--text-tertiary);">
+          <strong>交叉验证</strong>：A(资金+51亿) + B(6G+航天政策) 同向 &rarr; 确定性最强
+        </div>
+      </div>
+
+      <!-- Theme 2: Humanoid Robot -->
+      <div class="card card-sectors" style="position: relative; background: linear-gradient(135deg, var(--sector-tech), transparent); border-left: 4px solid var(--sector-tech-border);">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <h3 style="margin:0;">人形机器人/自动化</h3>
+          <span class="chip chip-positive">确定性强</span>
+        </div>
+        <div style="display:flex; gap: 24px; margin-top: 12px;">
+          <div class="key-value">
+            <div class="kv-label">板块净流入</div>
+            <div class="kv-value up">+34.10亿</div>
+          </div>
+          <div class="key-value">
+            <div class="kv-label">涨停数</div>
+            <div class="kv-value" style="color: var(--accent-primary);">近30家</div>
+          </div>
+        </div>
+        <div style="margin-top: 8px; font-size: 13px; color: var(--text-secondary);">
+          绿的谐波(+14%/+7亿) 五洲新春(+10%)
+        </div>
+        <div class="section-divider"></div>
+        <div style="font-size: 12px; color: var(--text-tertiary);">
+          <strong>交叉验证</strong>：A(资金+34亿) + B(Optimus量产+AI政策) 同向
+        </div>
+      </div>
+
+      <!-- Theme 3: AI Computing -->
+      <div class="card card-sectors" style="border-left: 4px solid var(--sector-tech-border);">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <h3 style="margin:0;">通信/AI算力</h3>
+          <span class="chip chip-neutral">延续需观察</span>
+        </div>
+        <div style="display:flex; gap: 24px; margin-top: 12px;">
+          <div class="key-value">
+            <div class="kv-label">板块净流入</div>
+            <div class="kv-value up">+13.24亿</div>
+          </div>
+          <div class="key-value">
+            <div class="kv-label">龙头</div>
+            <div class="kv-value" style="font-size:18px;">烽火+10%</div>
+          </div>
+        </div>
+        <div style="margin-top: 8px; font-size: 12px; color: var(--text-tertiary);">
+          <span style="color: var(--accent-primary);">注意</span>：通鼎互联涨停但净流出-9.66亿，龙头分歧大
+        </div>
+      </div>
+
+      <!-- Theme 4: Consumer Electronics -->
+      <div class="card card-sectors" style="border-left: 4px solid var(--sector-tech-border);">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <h3 style="margin:0;">消费电子</h3>
+          <span class="chip chip-neutral">短期资金驱动</span>
+        </div>
+        <div style="display:flex; gap: 24px; margin-top: 12px;">
+          <div class="key-value">
+            <div class="kv-label">板块净流入</div>
+            <div class="kv-value up">+22.20亿</div>
+          </div>
+          <div class="key-value">
+            <div class="kv-label">个股TOP1</div>
+            <div class="kv-value" style="font-size:18px;">立讯+19亿</div>
+          </div>
+        </div>
+        <div style="margin-top: 8px; font-size: 12px; color: var(--text-tertiary);">
+          缺乏强劲产业政策催化
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Flow warning -->
+    <div class="highlight-box" style="margin-top: 12px; border-color: var(--down-color); background: linear-gradient(135deg, var(--down-bg), transparent);">
+      <div class="hl-title" style="color: var(--down-color);">资金净流出 TOP3</div>
+      <div style="display:flex; gap: 32px; margin-top: 8px; font-size: 14px;">
+        <span><span style="color: var(--down-color);">半导体</span> -140.68亿</span>
+        <span><span style="color: var(--down-color);">电池</span> -129.23亿</span>
+        <span><span style="color: var(--down-color);">能源金属</span> -48.47亿</span>
+      </div>
+    </div>
+  </div>
+  <div class="slide-number">04 / 09</div>
+</section>
+
+<!-- ===== SLIDE 5: KEY STOCKS ===== -->
+<section class="slide" data-slide="4">
+  <div class="section-enter">
+    <div class="section-title"><span class="num">04</span>重点个股</div>
+
+    <div class="card-grid card-grid-3" style="gap: 16px;">
+
+      <div class="card card-sectors" style="border-left: 4px solid var(--sector-military-border);">
+        <h3 style="color: var(--accent-primary);">电科蓝天 688818</h3>
+        <div class="value up" style="font-size: 28px;">+19.99%</div>
+        <div class="sublabel">军工+商业航天双龙头 | 20CM涨停</div>
+        <div class="section-divider"></div>
+        <div style="font-size: 13px; color: var(--text-tertiary);">
+          净流出-3.68亿（资金分歧）<br>
+          板块净流入+51.71亿，但龙头被出货
+        </div>
+      </div>
+
+      <div class="card card-sectors" style="border-left: 4px solid var(--sector-tech-border);">
+        <h3 style="color: var(--accent-primary);">绿的谐波 688017</h3>
+        <div class="value up" style="font-size: 28px;">+14.11%</div>
+        <div class="sublabel">人形机器人核心零部件龙头</div>
+        <div class="section-divider"></div>
+        <div style="font-size: 13px; color: var(--text-tertiary);">
+          <span style="color: var(--up-color);">净流入+6.98亿</span>（资金一致）<br>
+          谐波减速器龙头，量价配合良好
+        </div>
+      </div>
+
+      <div class="card card-sectors" style="border-left: 4px solid var(--sector-tech-border);">
+        <h3 style="color: var(--accent-primary);">烽火通信 600498</h3>
+        <div class="value up" style="font-size: 28px;">+10.00%</div>
+        <div class="sublabel">AI算力+通信设备龙头 | 涨停</div>
+        <div class="section-divider"></div>
+        <div style="font-size: 13px; color: var(--text-tertiary);">
+          <span style="color: var(--up-color);">净流入+11.58亿</span>（个股TOP3）<br>
+          6G试验频率批复 + AI算力需求催化
+        </div>
+      </div>
+
+      <div class="card card-sectors" style="border-left: 4px solid var(--sector-military-border);">
+        <h3>航天发展 000547</h3>
+        <div class="value up" style="font-size: 28px;">+10.01%</div>
+        <div class="sublabel">商业航天龙头 | 午后涨停</div>
+        <div style="font-size:13px;color:var(--text-tertiary);margin-top:8px;">
+          净流入+1.20亿，资金一致
+        </div>
+      </div>
+
+      <div class="card card-sectors" style="border-left: 4px solid var(--sector-tech-border);">
+        <h3>立讯精密 002475</h3>
+        <div class="value up" style="font-size: 28px;">+2.49%</div>
+        <div class="sublabel">消费电子龙头 | 资金流入全市场第一</div>
+        <div style="font-size:13px;color:var(--text-tertiary);margin-top:8px;">
+          <span style="color: var(--up-color);">净流入+19.43亿</span><br>
+          AI端侧算力+苹果产业链周期复苏
+        </div>
+      </div>
+
+      <div class="card card-sectors" style="border-left: 4px solid var(--sector-tech-border);">
+        <h3>浪潮信息 000977</h3>
+        <div class="value up" style="font-size: 28px;">+4.42%</div>
+        <div class="sublabel">AI算力服务器龙头</div>
+        <div style="font-size:13px;color:var(--text-tertiary);margin-top:8px;">
+          <span style="color: var(--up-color);">净流入+14.86亿</span>（个股TOP2）<br>
+          四部门AI+能源政策催化
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <div class="slide-number">05 / 09</div>
+</section>
+
+<!-- ===== SLIDE 6: CAPITAL DEPTH ===== -->
+<section class="slide" data-slide="5">
+  <div class="section-enter">
+    <div class="section-title"><span class="num">05</span>资金深度</div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+      <!-- Individual TOP 5 -->
+      <div class="card">
+        <h3>个股资金净流入 TOP 5</h3>
+        <table style="margin-top: 8px;">
+          <thead>
+            <tr><th>个股</th><th>涨跌幅</th><th>净流入</th><th>主线</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>立讯精密</td><td class="up">+2.49%</td><td style="color: var(--up-color); font-weight: 600;">19.43亿</td><td>消费电子</td></tr>
+            <tr><td>浪潮信息</td><td class="up">+4.42%</td><td style="color: var(--up-color); font-weight: 600;">14.86亿</td><td>AI算力</td></tr>
+            <tr><td>烽火通信</td><td class="up">+10.00%</td><td style="color: var(--up-color); font-weight: 600;">11.58亿</td><td>通信</td></tr>
+            <tr><td>中际旭创</td><td class="up">+0.97%</td><td style="color: var(--up-color); font-weight: 600;">10.99亿</td><td>AI算力</td></tr>
+            <tr><td>航天电子</td><td class="up">+5.29%</td><td style="color: var(--up-color); font-weight: 600;">9.54亿</td><td>军工</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Sector flow TOP 5 -->
+      <div class="card">
+        <h3>板块资金净流入 TOP 5</h3>
+        <table style="margin-top: 8px;">
+          <thead>
+            <tr><th>板块</th><th>涨跌幅</th><th>净额(亿)</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><span class="chip chip-positive" style="margin:0;">军工装备</span></td><td class="up">+3.31%</td><td style="color: var(--up-color); font-weight: 600;">+51.71</td></tr>
+            <tr><td>汽车零部件</td><td class="up">+2.25%</td><td style="color: var(--up-color); font-weight: 600;">+34.10</td></tr>
+            <tr><td>消费电子</td><td class="up">+1.85%</td><td style="color: var(--up-color); font-weight: 600;">+22.20</td></tr>
+            <tr><td>通信设备</td><td class="up">+1.99%</td><td style="color: var(--up-color); font-weight: 600;">+13.24</td></tr>
+            <tr><td>贵金属</td><td class="up">+1.92%</td><td style="color: var(--up-color); font-weight: 600;">+11.63</td></tr>
+          </tbody>
+        </table>
+        <div style="margin-top:12px;font-size:13px;color:var(--text-tertiary);">
+          净流出最大：<span style="color:var(--down-color);">半导体 -140.68亿</span> | <span style="color:var(--down-color);">电池 -129.23亿</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Divergence warning -->
+    <div class="card" style="margin-top: 12px;">
+      <h3>资金背离检测</h3>
+      <table style="margin-top: 8px;">
+        <thead>
+          <tr><th>板块</th><th>板块净额</th><th>龙头个股净额</th><th>判断</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>军工装备</td>
+            <td style="color: var(--up-color);">+51.71亿</td>
+            <td style="color: var(--down-color);">电科蓝天 -3.68亿</td>
+            <td><span class="chip chip-negative">背离</span></td>
+          </tr>
+          <tr>
+            <td>通信设备</td>
+            <td style="color: var(--up-color);">+13.24亿</td>
+            <td style="color: var(--down-color);">通鼎互联 -9.66亿</td>
+            <td><span class="chip chip-negative">严重背离</span></td>
+          </tr>
+          <tr>
+            <td>消费电子</td>
+            <td style="color: var(--up-color);">+22.20亿</td>
+            <td style="color: var(--flat-color);">昀冢科技 -0.42亿</td>
+            <td><span class="chip chip-neutral">正常</span></td>
+          </tr>
+          <tr>
+            <td>贵金属</td>
+            <td style="color: var(--up-color);">+11.63亿</td>
+            <td style="color: var(--up-color);">赤峰黄金 +4.72亿</td>
+            <td><span class="chip chip-positive">一致</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="slide-number">06 / 09</div>
+</section>
+
+<!-- ===== SLIDE 7: SENTIMENT ===== -->
+<section class="slide" data-slide="6">
+  <div class="section-enter">
+    <div class="section-title"><span class="num">06</span>情绪分析</div>
+
+    <div class="card-grid card-grid-4" style="gap: 16px;">
+      <div class="card">
+        <h3>涨停家数</h3>
+        <div class="key-value">
+          <div class="kv-value" style="color: var(--accent-primary);">132</div>
+          <div class="sublabel">连续多日 &gt; 100</div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>跌停家数</h3>
+        <div class="key-value">
+          <div class="kv-value" style="color: var(--down-color);">5</div>
+          <div class="sublabel">极低，无恐慌</div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>涨幅 &gt; 5%</h3>
+        <div class="key-value">
+          <div class="kv-value up">266</div>
+          <div class="sublabel">赚钱效应扩散</div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>跌幅 &lt; -5%</h3>
+        <div class="key-value">
+          <div class="kv-value" style="color: var(--flat-color);">58</div>
+          <div class="sublabel">极低</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="highlight-box" style="margin-top: 20px;">
+      <div class="hl-title">情绪周期定位：活跃期 &rarr; 局部高潮</div>
+      <p style="color: var(--text-secondary); margin-top: 8px;">
+        连续多日超百股涨停说明做多意愿强，但需要注意：<br>
+        科创50跌2.29%，半导体/电池大幅出逃，资金进行 <strong style="color: var(--accent-primary);">明显的板块切换</strong><br>
+        新方向（军工/机器人）已进入加速期，追涨性价比下降
+      </p>
+    </div>
+  </div>
+  <div class="slide-number">07 / 09</div>
+</section>
+
+<!-- ===== SLIDE 8: OPPORTUNITIES & RISKS ===== -->
+<section class="slide" data-slide="7">
+  <div class="section-enter">
+    <div class="section-title"><span class="num">07</span>机会与风险</div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+
+      <!-- Opportunities -->
+      <div>
+        <h3 style="margin-bottom: 12px; color: var(--up-color);">机会</h3>
+
+        <div class="card" style="margin-bottom: 12px; border-left: 3px solid var(--up-color);">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="margin:0;">AI算力（通信设备方向）</h3>
+            <span class="chip chip-positive">评级 4/5</span>
+          </div>
+          <div style="font-size: 14px; color: var(--text-secondary); margin-top: 8px;">
+            四部门政策发布 + 6G频率批复 + 烽火通信龙头确立
+          </div>
+          <div style="font-size: 13px; color: var(--text-tertiary); margin-top: 6px;">
+            观察：烽火是否连板，通鼎互联能否止住资金流出
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom: 12px; border-left: 3px solid var(--sector-gold-border);">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="margin:0;">贵金属/黄金</h3>
+            <span class="chip chip-positive">评级 3.5/5</span>
+          </div>
+          <div style="font-size: 14px; color: var(--text-secondary); margin-top: 8px;">
+            美联储鹰派 + 通胀预期上升，黄金维持强势
+          </div>
+          <div style="font-size: 13px; color: var(--text-tertiary); margin-top: 6px;">
+            观察：赤峰黄金是否突破前高，COMEX走势
+          </div>
+        </div>
+
+        <div class="card" style="border-left: 3px solid var(--sector-tech-border);">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="margin:0;">消费电子复苏链</h3>
+            <span class="chip chip-neutral">评级 3/5</span>
+          </div>
+          <div style="font-size: 14px; color: var(--text-secondary); margin-top: 8px;">
+            立讯精密19亿净流入全市场第一，建仓迹象明显
+          </div>
+        </div>
+      </div>
+
+      <!-- Risks -->
+      <div>
+        <h3 style="margin-bottom: 12px; color: var(--down-color);">风险</h3>
+
+        <div class="card" style="margin-bottom: 12px; border-left: 3px solid var(--down-color);">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="margin:0;">半导体/科创50资金溃逃</h3>
+            <span class="chip chip-negative">评级 4/5</span>
+          </div>
+          <div style="font-size: 14px; color: var(--text-secondary); margin-top: 8px;">
+            单日净流出140亿，若周一继续放大将拖累整体情绪
+          </div>
+          <div style="font-size: 13px; color: var(--text-tertiary); margin-top: 6px;">
+            观察：科创50是否失守1600点
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom: 12px; border-left: 3px solid var(--down-color);">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="margin:0;">军工龙头资金背离</h3>
+            <span class="chip chip-negative">评级 3.5/5</span>
+          </div>
+          <div style="font-size: 14px; color: var(--text-secondary); margin-top: 8px;">
+            板块净流入第一，但龙头电科蓝天净流出3.68亿
+          </div>
+          <div style="font-size: 13px; color: var(--text-tertiary); margin-top: 6px;">
+            观察：电科蓝天周一方向选择
+          </div>
+        </div>
+
+        <div class="card" style="border-left: 3px solid var(--down-color);">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="margin:0;">美联储加息预期强化</h3>
+            <span class="chip chip-neutral">评级 3/5</span>
+          </div>
+          <div style="font-size: 14px; color: var(--text-secondary); margin-top: 8px;">
+            短期通胀预期3.64%，古尔斯比放鹰
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Cross-validation summary -->
+    <div class="card" style="margin-top: 16px;">
+      <h3>双重逻辑链交叉验证总结</h3>
+      <table style="margin-top: 8px;">
+        <thead>
+          <tr><th>主线</th><th>链A(资金)</th><th>链B(政策/产业)</th><th>综合判断</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>军工/航天</td><td style="color:var(--up-color);">强(+51亿)</td><td style="color:var(--up-color);">强(商业航天+6G)</td><td><span class="chip chip-positive">确定性最强</span></td></tr>
+          <tr><td>人形机器人</td><td style="color:var(--up-color);">强(+34亿)</td><td style="color:var(--text-secondary);">中强(产业化初期)</td><td><span class="chip chip-positive">短期资金驱动偏强</span></td></tr>
+          <tr><td>AI算力/通信</td><td style="color:var(--text-secondary);">中(+13亿)</td><td style="color:var(--up-color);">强(政策密集)</td><td><span class="chip chip-primary">布局窗口期</span></td></tr>
+          <tr><td>消费电子</td><td style="color:var(--up-color);">强(+22亿)</td><td style="color:var(--text-tertiary);">中(换机周期)</td><td><span class="chip chip-neutral">关注持续性</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="slide-number">08 / 09</div>
+</section>
+
+<!-- ===== SLIDE 9: WATCHLIST ===== -->
+<section class="slide" data-slide="8">
+  <div class="section-enter">
+    <div class="section-title"><span class="num">08</span>明日观察</div>
+    <p style="color: var(--text-secondary); margin-bottom: 16px;">下周一（2026-05-11）关键观察指标</p>
+
+    <div class="card">
+      <table class="priority-table">
+        <thead>
+          <tr><th>优先级</th><th>观察事项</th><th>原因</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="priority-p0">P0</span></td>
+            <td>电科蓝天周一开盘方向</td>
+            <td style="color: var(--text-secondary);">军工龙头风向标，若低开将打击板块情绪</td>
+          </tr>
+          <tr>
+            <td><span class="priority-p0">P0</span></td>
+            <td>半导体板块资金是否企稳</td>
+            <td style="color: var(--text-secondary);">140亿净流出后的修复力度决定市场走向</td>
+          </tr>
+          <tr>
+            <td><span class="priority-p0">P0</span></td>
+            <td>成交额能否维持3万亿+</td>
+            <td style="color: var(--text-secondary);">缩量则分化加剧，放量则板块轮动延续</td>
+          </tr>
+          <tr>
+            <td><span class="priority-p1">P1</span></td>
+            <td>四部门AI+能源政策发酵力度</td>
+            <td style="color: var(--text-secondary);">关注算电协同概念能否接力</td>
+          </tr>
+          <tr>
+            <td><span class="priority-p1">P1</span></td>
+            <td>外盘非农数据发布后美股反应</td>
+            <td style="color: var(--text-secondary);">影响周一北向资金方向</td>
+          </tr>
+          <tr>
+            <td><span class="priority-p2">P2</span></td>
+            <td>通鼎互联 vs 烽火通信（通信内部轮动）</td>
+            <td style="color: var(--text-secondary);">龙头分歧时的资金选择</td>
+          </tr>
+          <tr>
+            <td><span class="priority-p2">P2</span></td>
+            <td>北证50延续性</td>
+            <td style="color: var(--text-secondary);">若继续走强说明中小盘活跃度延续</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="display:flex; gap: 16px; margin-top: 20px; text-align: center;">
+      <div class="card" style="flex:1;">
+        <h3>集合竞价关注</h3>
+        <div style="font-size:14px;color:var(--text-secondary);margin-top:8px;">
+          电科蓝天 / 绿的谐波 / 烽火通信
+        </div>
+      </div>
+      <div class="card" style="flex:1;">
+        <h3>北向资金</h3>
+        <div style="font-size:14px;color:var(--text-secondary);margin-top:8px;">
+          周一早盘净买入方向
+        </div>
+      </div>
+      <div class="card" style="flex:1;">
+        <h3>涨停晋级率</h3>
+        <div style="font-size:14px;color:var(--text-secondary);margin-top:8px;">
+          杭电股份能否4连板
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top: 24px; text-align: center; font-size: 13px; color: var(--text-tertiary);">
+      数据来源：AkShare 全A行情 / 板块资金流向 / 个股资金流 | 报告生成：2026-05-09
+    </div>
+  </div>
+  <div class="slide-number">09 / 09</div>
+</section>
+
+<script>
+(function() {
+  // Intersection Observer for section enter animations
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const el = entry.target.querySelector('.section-enter');
+        if (el) el.classList.add('active');
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.slide').forEach(slide => {
+    observer.observe(slide);
+  });
+
+  // Build nav dots
+  const slides = document.querySelectorAll('.slide');
+  const navDots = document.getElementById('navDots');
+
+  slides.forEach((slide, i) => {
+    const dot = document.createElement('div');
+    dot.className = 'nav-dot' + (i === 0 ? ' active' : '');
+    dot.dataset.index = i;
+    dot.addEventListener('click', () => {
+      slide.scrollIntoView({ behavior: 'smooth' });
+    });
+    navDots.appendChild(dot);
+  });
+
+  // Update active dot on scroll
+  let ticking = false;
+  document.addEventListener('scroll', () => {
+    if (!ticking) {
+      window.requestAnimationFrame(() => {
+        const scrollCenter = window.scrollY + window.innerHeight / 2;
+        let activeIndex = 0;
+        slides.forEach((slide, i) => {
+          const rect = slide.getBoundingClientRect();
+          if (scrollCenter >= rect.top + window.scrollY && scrollCenter <= rect.bottom + window.scrollY) {
+            activeIndex = i;
+          }
+        });
+        document.querySelectorAll('.nav-dot').forEach((d, i) => {
+          d.classList.toggle('active', i === activeIndex);
+        });
+        ticking = false;
+      });
+      ticking = true;
+    }
+  });
+
+  // Activate first slide immediately
+  const firstSlideEnter = slides[0]?.querySelector('.section-enter');
+  if (firstSlideEnter) firstSlideEnter.classList.add('active');
+})();
+</script>
+</body>
+</html>

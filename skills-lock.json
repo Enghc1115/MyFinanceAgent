@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "skills": {
+    "china-stock-analysis": {
+      "source": "sugarforever/01coder-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/china-stock-analysis/SKILL.md",
+      "computedHash": "a7de1ec48a7a46867eccaa927cb100c4e3c248c71f5266762d7fdecd65558cd9"
+    },
+    "frontend-slides": {
+      "source": "zarazhangrui/frontend-slides",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "a561d9c1c048d577d26e8ab258c6dbf420024beae41c187b25e4eabedd2ba56c"
+    },
+    "munger-perspective": {
+      "source": "alchaincyf/munger-skill",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "d182bca22f9cb55982152c0ee8787b8755233f412feb2c8890fdcee76658742d"
+    },
+    "sector-rotation-detector": {
+      "source": "yuping322/finskills",
+      "sourceType": "github",
+      "skillPath": "China-market/sector-rotation-detector/SKILL.md",
+      "computedHash": "55fe15b887cafe3ff026adfac0f7b6c563e2126fc3c328d65414853b5faf3c53"
+    }
+  }
+}

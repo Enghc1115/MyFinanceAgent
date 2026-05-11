@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>A股市场日报 — 2026-05-09</title>
+
+    <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700&f[]=satoshi@300,400,500,700&display=swap" />
+
+    <style>
+        /* ===========================================
+           CSS CUSTOM PROPERTIES (THEME)
+           Professional financial dark theme
+           =========================================== */
+        :root {
+            --bg-primary: #0a0f1c;
+            --bg-secondary: #111827;
+            --bg-card: rgba(17, 24, 39, 0.7);
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --accent: #3b82f6;
+            --accent-glow: rgba(59, 130, 246, 0.25);
+            --green: #22c55e;
+            --red: #ef4444;
+            --border: rgba(59, 130, 246, 0.15);
+
+            --font-display: "Clash Display", sans-serif;
+            --font-body: "Satoshi", sans-serif;
+            --title-size: clamp(1.5rem, 5vw, 4rem);
+            --h2-size: clamp(1.25rem, 3.5vw, 2.5rem);
+            --h3-size: clamp(1rem, 2.5vw, 1.75rem);
+            --body-size: clamp(0.7rem, 1.4vw, 1.05rem);
+            --small-size: clamp(0.6rem, 0.9vw, 0.8rem);
+            --slide-padding: clamp(1rem, 4vw, 4rem);
+            --content-gap: clamp(0.5rem, 2vw, 2rem);
+            --element-gap: clamp(0.25rem, 1vw, 1rem);
+            --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+            --duration-normal: 0.6s;
+        }
+
+        /* ===========================================
+           VIEWPORT BASE — MANDATORY
+           =========================================== */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; overflow-x: hidden; }
+        html { scroll-snap-type: y mandatory; scroll-behavior: smooth; }
+
+        .slide {
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh;
+            overflow: hidden;
+            scroll-snap-align: start;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .slide-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            max-height: 100%;
+            overflow: hidden;
+            padding: var(--slide-padding);
+        }
+
+        .card, .container, .content-box {
+            max-width: min(90vw, 1100px);
+            max-height: min(80vh, 700px);
+        }
+
+        .feature-list, .bullet-list { gap: clamp(0.4rem, 1vh, 1rem); }
+        .feature-list li, .bullet-list li { font-size: var(--body-size); line-height: 1.4; }
+
+        img, .image-container { max-width: 100%; max-height: min(50vh, 400px); object-fit: contain; }
+
+        /* ===========================================
+           PRESET-SPECIFIC: FINANCIAL DARK
+           =========================================== */
+        body {
+            font-family: var(--font-body);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        .gradient-bg {
+            background:
+                radial-gradient(ellipse at 15% 20%, rgba(59, 130, 246, 0.12) 0%, transparent 55%),
+                radial-gradient(ellipse at 85% 80%, rgba(34, 197, 94, 0.06) 0%, transparent 50%),
+                var(--bg-primary);
+        }
+
+        .grid-bg {
+            background-image:
+                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 60px 60px;
+        }
+
+        .title-slide {
+            text-align: center;
+            align-items: center;
+        }
+        .title-slide .slide-content {
+            align-items: center;
+        }
+
+        h1 {
+            font-family: var(--font-display);
+            font-size: var(--title-size);
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            margin-bottom: clamp(0.5rem, 2vh, 1.5rem);
+        }
+        h2 {
+            font-family: var(--font-display);
+            font-size: var(--h2-size);
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            margin-bottom: clamp(0.75rem, 2vh, 1.5rem);
+            color: var(--accent);
+        }
+        h3 { font-size: var(--h3-size); font-weight: 500; }
+
+        .subtitle {
+            font-size: clamp(0.875rem, 2vw, 1.25rem);
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        .date-label {
+            font-size: var(--small-size);
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            margin-bottom: clamp(0.25rem, 1vh, 0.75rem);
+        }
+
+        .accent-line {
+            width: clamp(40px, 6vw, 80px);
+            height: 3px;
+            background: var(--accent);
+            border-radius: 2px;
+            margin: clamp(0.5rem, 2vh, 1.5rem) 0;
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+
+        /* Tables */
+        .data-table {
+            width: 100%;
+            max-width: min(95vw, 1000px);
+            border-collapse: collapse;
+            font-size: var(--body-size);
+            margin: 0 auto;
+        }
+        .data-table thead th {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--accent);
+            padding: clamp(0.4rem, 1vh, 0.75rem) clamp(0.5rem, 1.5vw, 1rem);
+            text-align: left;
+            font-weight: 500;
+            font-size: var(--small-size);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid var(--border);
+        }
+        .data-table tbody td {
+            padding: clamp(0.3rem, 0.8vh, 0.6rem) clamp(0.5rem, 1.5vw, 1rem);
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            font-weight: 400;
+        }
+        .data-table tbody tr:hover {
+            background: rgba(59, 130, 246, 0.05);
+        }
+        .data-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .up { color: var(--green); }
+        .down { color: var(--red); }
+        .text-muted { color: var(--text-secondary); }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+            gap: clamp(0.5rem, 1.5vw, 1.5rem);
+            width: 100%;
+            max-width: min(95vw, 1000px);
+            margin: 0 auto;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: clamp(0.75rem, 2vh, 1.5rem);
+            text-align: center;
+            backdrop-filter: blur(4px);
+        }
+        .stat-card .stat-value {
+            font-family: var(--font-display);
+            font-size: clamp(1.25rem, 3vw, 2.25rem);
+            font-weight: 600;
+            line-height: 1.2;
+        }
+        .stat-card .stat-label {
+            font-size: var(--small-size);
+            color: var(--text-secondary);
+            margin-top: clamp(0.2rem, 0.5vh, 0.5rem);
+        }
+
+        .headlines {
+            list-style: none;
+            width: 100%;
+            max-width: min(95vw, 900px);
+            margin: 0 auto;
+        }
+        .headlines li {
+            font-size: var(--body-size);
+            padding: clamp(0.4rem, 1vh, 0.8rem) 0;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            display: flex;
+            align-items: flex-start;
+            gap: clamp(0.5rem, 1vw, 1rem);
+        }
+        .headlines li::before {
+            content: "";
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent);
+            margin-top: clamp(0.4rem, 1vh, 0.6rem);
+            flex-shrink: 0;
+        }
+        .headlines li:last-child { border-bottom: none; }
+
+        .summary-text {
+            font-size: clamp(0.85rem, 1.6vw, 1.15rem);
+            line-height: 1.7;
+            color: var(--text-secondary);
+            max-width: min(95vw, 900px);
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .flex-row {
+            display: flex;
+            flex-direction: row;
+            gap: clamp(0.5rem, 2vw, 2rem);
+            align-items: center;
+            width: 100%;
+            max-width: min(95vw, 1000px);
+            margin: 0 auto;
+        }
+        .flex-row .stat-card { flex: 1; }
+
+        /* ===========================================
+           ANIMATIONS
+           =========================================== */
+        .reveal {
+            opacity: 0;
+            transform: translateY(25px);
+            transition:
+                opacity var(--duration-normal) var(--ease-out-expo),
+                transform var(--duration-normal) var(--ease-out-expo);
+        }
+        .slide.visible .reveal {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .reveal:nth-child(1) { transition-delay: 0.05s; }
+        .reveal:nth-child(2) { transition-delay: 0.15s; }
+        .reveal:nth-child(3) { transition-delay: 0.25s; }
+        .reveal:nth-child(4) { transition-delay: 0.35s; }
+        .reveal:nth-child(5) { transition-delay: 0.45s; }
+        .reveal:nth-child(6) { transition-delay: 0.55s; }
+        .reveal:nth-child(7) { transition-delay: 0.65s; }
+        .reveal:nth-child(8) { transition-delay: 0.75s; }
+
+        .slide.visible .reveal-delay-1 { transition-delay: 0.1s; }
+        .slide.visible .reveal-delay-2 { transition-delay: 0.3s; }
+        .slide.visible .reveal-delay-3 { transition-delay: 0.5s; }
+
+        .ticker-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 28px;
+            background: rgba(17, 24, 39, 0.9);
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+            z-index: 1000;
+            backdrop-filter: blur(8px);
+        }
+        .ticker-content {
+            display: flex;
+            gap: 2rem;
+            white-space: nowrap;
+            animation: ticker-scroll 30s linear infinite;
+            font-size: var(--small-size);
+            padding: 0 1rem;
+        }
+        @keyframes ticker-scroll {
+            0% { transform: translateX(100vw); }
+            100% { transform: translateX(-100%); }
+        }
+
+        /* Progress bar */
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 2px;
+            background: var(--accent);
+            z-index: 1000;
+            transition: width 0.3s ease;
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        /* Navigation dots */
+        .nav-dots {
+            position: fixed;
+            right: clamp(0.5rem, 1.5vw, 1.5rem);
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            z-index: 100;
+        }
+        .nav-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .nav-dot.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            box-shadow: 0 0 8px var(--accent-glow);
+        }
+        .nav-dot:hover {
+            border-color: var(--accent);
+        }
+
+        /* ===========================================
+           RESPONSIVE BREAKPOINTS
+           =========================================== */
+        @media (max-height: 700px) {
+            :root {
+                --slide-padding: clamp(0.75rem, 3vw, 2rem);
+                --content-gap: clamp(0.4rem, 1.5vw, 1rem);
+                --title-size: clamp(1.25rem, 4.5vw, 2.5rem);
+                --h2-size: clamp(1rem, 3vw, 1.75rem);
+            }
+        }
+        @media (max-height: 600px) {
+            :root {
+                --slide-padding: clamp(0.5rem, 2.5vw, 1.5rem);
+                --content-gap: clamp(0.3rem, 1vw, 0.75rem);
+                --title-size: clamp(1.1rem, 4vw, 2rem);
+                --body-size: clamp(0.65rem, 1.2vw, 0.9rem);
+            }
+            .nav-dots, .ticker-bar { display: none; }
+        }
+        @media (max-height: 500px) {
+            :root {
+                --slide-padding: clamp(0.4rem, 2vw, 1rem);
+                --title-size: clamp(1rem, 3.5vw, 1.5rem);
+                --h2-size: clamp(0.9rem, 2.5vw, 1.25rem);
+                --body-size: clamp(0.6rem, 1vw, 0.8rem);
+            }
+        }
+        @media (max-width: 600px) {
+            :root { --title-size: clamp(1.25rem, 7vw, 2.5rem); }
+            .stat-grid { grid-template-columns: repeat(2, 1fr); }
+            .flex-row { flex-direction: column; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.2s !important;
+            }
+            html { scroll-behavior: auto; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Progress bar -->
+    <div class="progress-bar" id="progressBar"></div>
+
+    <!-- Navigation dots -->
+    <nav class="nav-dots" id="navDots"></nav>
+
+    <!-- ====== SLIDE 1: TITLE ====== -->
+    <section class="slide title-slide gradient-bg" data-index="0">
+        <div class="slide-content">
+            <span class="date-label reveal">2026 年 5 月 9 日 · 收盘简报</span>
+            <h1 class="reveal">A 股市场日报</h1>
+            <div class="accent-line reveal"></div>
+            <p class="subtitle reveal">MyFinanceAgent · 专业金融分析</p>
+        </div>
+    </section>
+
+    <!-- ====== SLIDE 2: 大盘指数 ====== -->
+    <section class="slide grid-bg" data-index="1">
+        <div class="slide-content">
+            <h2 class="reveal">📊 大盘指数</h2>
+            <table class="data-table reveal">
+                <thead>
+                    <tr>
+                        <th>指数</th>
+                        <th>收盘价</th>
+                        <th>涨跌幅</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>上证指数</td><td>4,179.95</td><td class="down">-0.00%</td></tr>
+                    <tr><td>深证成指</td><td>15,563.80</td><td class="down">-0.50%</td></tr>
+                    <tr><td>创业板指</td><td>3,796.13</td><td class="down">-0.96%</td></tr>
+                    <tr><td>科创50</td><td>1,640.46</td><td class="down">-2.29%</td></tr>
+                    <tr><td>北证50</td><td>1,436.36</td><td class="up">+2.24%</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- ====== SLIDE 3: 市场概况 ====== -->
+    <section class="slide gradient-bg" data-index="2">
+        <div class="slide-content">
+            <h2 class="reveal">📈 市场概况</h2>
+            <div class="flex-row reveal">
+                <div class="stat-card">
+                    <div class="stat-value up">3,636</div>
+                    <div class="stat-label">上涨家数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value down">1,728</div>
+                    <div class="stat-label">下跌家数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" style="color:var(--text-primary);">2.10</div>
+                    <div class="stat-label">涨跌比</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" style="color:var(--text-primary);">30,752</div>
+                    <div class="stat-label">成交额(亿)</div>
+                </div>
+            </div>
+            <div class="stat-grid reveal" style="margin-top: clamp(0.5rem, 1.5vh, 1.5rem);">
+                <div class="stat-card">
+                    <div class="stat-value" style="font-size: clamp(1rem, 2vw, 1.5rem);">132</div>
+                    <div class="stat-label">涨停</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" style="font-size: clamp(1rem, 2vw, 1.5rem);">266</div>
+                    <div class="stat-label">大涨 5~9.9%</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" style="font-size: clamp(1rem, 2vw, 1.5rem);">3238</div>
+                    <div class="stat-label">小涨 0~5%</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" style="font-size: clamp(1rem, 2vw, 1.5rem);">58</div>
+                    <div class="stat-label">大跌 -5% 以下</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" style="font-size: clamp(1rem, 2vw, 1.5rem);">5</div>
+                    <div class="stat-label">跌停</div>
+                </div>
+            </div>
+            <p class="reveal text-muted" style="text-align:center;margin-top:clamp(0.5rem,1vh,1rem);font-size:var(--small-size);">
+                平均涨幅: 0.99% &nbsp;·&nbsp; 涨幅中位数: 0.71% &nbsp;·&nbsp; 环比前一交易日: +0.00%
+            </p>
+        </div>
+    </section>
+
+    <!-- ====== SLIDE 4: 板块资金流向 ====== -->
+    <section class="slide grid-bg" data-index="3">
+        <div class="slide-content">
+            <h2 class="reveal">💰 板块资金流向 TOP5</h2>
+            <table class="data-table reveal">
+                <thead>
+                    <tr>
+                        <th>板块</th>
+                        <th>净额(亿)</th>
+                        <th>龙头个股</th>
+                        <th>龙头涨跌幅</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>军工装备</td><td class="up">+51.71</td><td>电科蓝天</td><td class="up">+19.99%</td></tr>
+                    <tr><td>汽车零部件</td><td class="up">+34.10</td><td>天铭科技</td><td class="up">+29.98%</td></tr>
+                    <tr><td>消费电子</td><td class="up">+22.20</td><td>昀冢科技</td><td class="up">+20.00%</td></tr>
+                    <tr><td>通信设备</td><td class="up">+13.24</td><td>通鼎互联</td><td class="up">+10.01%</td></tr>
+                    <tr><td>贵金属</td><td class="up">+11.63</td><td>赤峰黄金</td><td class="up">+4.82%</td></tr>
+                </tbody>
+            </table>
+            <p class="reveal text-muted" style="text-align:center;margin-top:clamp(0.5rem,1vh,1rem);font-size:var(--small-size);">
+                军工装备领衔，净流入 51.71 亿元
+            </p>
+        </div>
+    </section>
+
+    <!-- ====== SLIDE 5: 涨幅榜 ====== -->
+    <section class="slide gradient-bg" data-index="4">
+        <div class="slide-content">
+            <h2 class="reveal">🏆 涨幅榜 TOP10</h2>
+            <table class="data-table reveal">
+                <thead>
+                    <tr><th>代码</th><th>名称</th><th>最新价</th><th>涨跌幅</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td class="text-muted">bj920270</td><td>天铭科技</td><td>20.64</td><td class="up">+29.98%</td></tr>
+                    <tr><td class="text-muted">bj920438</td><td>戈碧迦</td><td>70.10</td><td class="up">+22.55%</td></tr>
+                    <tr><td class="text-muted">sz301028</td><td>鼎熔岩</td><td>17.75</td><td class="up">+20.01%</td></tr>
+                    <tr><td class="text-muted">sz300488</td><td>恒锋工具</td><td>41.56</td><td class="up">+20.01%</td></tr>
+                    <tr><td class="text-muted">sz301183</td><td>东田微</td><td>240.40</td><td class="up">+20.00%</td></tr>
+                    <tr><td class="text-muted">sh688260</td><td>昀冢科技</td><td>45.72</td><td class="up">+20.00%</td></tr>
+                    <tr><td class="text-muted">sz300283</td><td>温州宏丰</td><td>16.98</td><td class="up">+20.00%</td></tr>
+                    <tr><td class="text-muted">sh688818</td><td>电科蓝天</td><td>85.64</td><td class="up">+19.99%</td></tr>
+                    <tr><td class="text-muted">sz300258</td><td>精锻科技</td><td>14.06</td><td class="up">+19.97%</td></tr>
+                    <tr><td class="text-muted">sz300716</td><td>*ST泉为</td><td>15.40</td><td class="up">+17.83%</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- ====== SLIDE 6: 今日头条 ====== -->
+    <section class="slide grid-bg" data-index="5">
+        <div class="slide-content">
+            <h2 class="reveal">📰 今日头条</h2>
+            <ul class="headlines reveal">
+                <li>尼泊尔今春发放的攀登珠峰许可证数量创新高</li>
+                <li>海关总署：今年前4个月我国电动汽车出口增长68.1%</li>
+                <li>我国百余家单位将共建"太空云"生态</li>
+                <li>伊朗议员说美驱逐舰得多配护卫舰</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- ====== SLIDE 7: 总结 ====== -->
+    <section class="slide title-slide gradient-bg" data-index="6">
+        <div class="slide-content">
+            <h2 class="reveal">📋 总结</h2>
+            <div class="accent-line reveal" style="margin:clamp(0.5rem,2vh,1.5rem) auto;"></div>
+            <p class="summary-text reveal">
+                市场表现强势，上涨家数 3,636 家远超下跌 1,728 家，<br>
+                涨跌比 2.1，平均涨幅 0.99%。
+            </p>
+            <p class="summary-text reveal" style="margin-top:clamp(0.5rem,1.5vh,1rem);">
+                指数分化明显，北证50 领涨 (+2.24%)，科创50 承压 (-2.29%)。<br>
+                军工装备板块资金净流入 51.71 亿领跑全市场。
+            </p>
+            <p class="reveal text-muted" style="margin-top:clamp(1rem,3vh,2rem);font-size:var(--small-size);">
+                MyFinanceAgent · 数据来源: AkShare / 新浪财经 / 东方财富
+            </p>
+        </div>
+    </section>
+
+    <!-- Ticker bar -->
+    <div class="ticker-bar">
+        <div class="ticker-content">
+            <span>上证指数 <span class="down">4,179.95 (-0.00%)</span></span>
+            <span>深证成指 <span class="down">15,563.80 (-0.50%)</span></span>
+            <span>创业板指 <span class="down">3,796.13 (-0.96%)</span></span>
+            <span>科创50 <span class="down">1,640.46 (-2.29%)</span></span>
+            <span>北证50 <span class="up">1,436.36 (+2.24%)</span></span>
+            <span>上涨 3,636</span>
+            <span>下跌 1,728</span>
+            <span>成交额 30,752 亿</span>
+        </div>
+    </div>
+
+    <script>
+        /* ===========================================
+           SLIDE PRESENTATION CONTROLLER
+           =========================================== */
+        class SlidePresentation {
+            constructor() {
+                this.slides = document.querySelectorAll(".slide");
+                this.currentSlide = 0;
+                this.totalSlides = this.slides.length;
+                this.isScrolling = false;
+
+                this.setupIntersectionObserver();
+                this.setupKeyboardNav();
+                this.setupTouchNav();
+                this.setupProgressBar();
+                this.setupNavDots();
+                this.setupWheelNav();
+            }
+
+            setupIntersectionObserver() {
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach((entry) => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add("visible");
+                            this.currentSlide = parseInt(entry.target.dataset.index);
+                            this.updateProgress();
+                            this.updateNavDots();
+                        }
+                    });
+                }, { threshold: 0.5 });
+
+                this.slides.forEach((slide) => observer.observe(slide));
+            }
+
+            setupKeyboardNav() {
+                document.addEventListener("keydown", (e) => {
+                    if (e.key === "ArrowDown" || e.key === "ArrowRight" || e.key === " ") {
+                        e.preventDefault();
+                        this.goToSlide(this.currentSlide + 1);
+                    } else if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
+                        e.preventDefault();
+                        this.goToSlide(this.currentSlide - 1);
+                    }
+                });
+            }
+
+            setupWheelNav() {
+                let wheelTimeout;
+                document.addEventListener("wheel", (e) => {
+                    if (wheelTimeout) return;
+                    wheelTimeout = setTimeout(() => { wheelTimeout = null; }, 800);
+                    if (e.deltaY > 0) this.goToSlide(this.currentSlide + 1);
+                    else this.goToSlide(this.currentSlide - 1);
+                }, { passive: true });
+            }
+
+            setupTouchNav() {
+                let touchStartY = 0;
+                document.addEventListener("touchstart", (e) => {
+                    touchStartY = e.touches[0].clientY;
+                }, { passive: true });
+                document.addEventListener("touchend", (e) => {
+                    const diff = touchStartY - e.changedTouches[0].clientY;
+                    if (Math.abs(diff) > 50) {
+                        if (diff > 0) this.goToSlide(this.currentSlide + 1);
+                        else this.goToSlide(this.currentSlide - 1);
+                    }
+                }, { passive: true });
+            }
+
+            setupProgressBar() {
+                this.progressBar = document.getElementById("progressBar");
+            }
+
+            updateProgress() {
+                const pct = ((this.currentSlide + 1) / this.totalSlides) * 100;
+                this.progressBar.style.width = pct + "%";
+            }
+
+            setupNavDots() {
+                const container = document.getElementById("navDots");
+                container.innerHTML = "";
+                for (let i = 0; i < this.totalSlides; i++) {
+                    const dot = document.createElement("button");
+                    dot.className = "nav-dot" + (i === 0 ? " active" : "");
+                    dot.setAttribute("aria-label", "Go to slide " + (i + 1));
+                    dot.addEventListener("click", () => this.goToSlide(i));
+                    container.appendChild(dot);
+                }
+            }
+
+            updateNavDots() {
+                const dots = document.querySelectorAll(".nav-dot");
+                dots.forEach((dot, i) => {
+                    dot.classList.toggle("active", i === this.currentSlide);
+                });
+            }
+
+            goToSlide(index) {
+                if (index < 0 || index >= this.totalSlides) return;
+                this.slides[index].scrollIntoView({ behavior: "smooth" });
+            }
+        }
+
+        new SlidePresentation();
+    </script>
+</body>
+</html>

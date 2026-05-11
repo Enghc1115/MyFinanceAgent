@@ -1,0 +1,3 @@
+time,mode,total,up,down,flat,ratio,total_amount,limit_up,big_up,small_up,small_down,big_down,limit_down,avg_change,median_change,sh_price,sh_change,sh_change_abs,sz_price,sz_change,sz_change_abs,cyb_price,cyb_change,cyb_change_abs,kc50_price,kc50_change,kc50_change_abs,bj50_price,bj50_change,bj50_change_abs
+04:17:39,close,5512,3636,1728,148,2.1,30752.3,132,266,3238,1665,58,5,0.99,0.71,4179.9524,-0.0,-0.1398,15563.8,-0.5,-78.089,3796.13,-0.96,-36.929,1640.4603,-2.29,-38.4269,1436.362,2.237,31.423
+04:38:05,close,5512,3636,1728,148,2.1,30752.3,132,266,3238,1665,58,5,0.99,0.71,4179.9524,-0.0,-0.1398,15563.8,-0.5,-78.089,3796.13,-0.96,-36.929,1640.4603,-2.29,-38.4269,1436.362,2.237,31.423
