@@ -8,7 +8,7 @@ import pandas as pd
 import akshare as ak
 from pathlib import Path
 
-from scripts.config import DATA_DIR
+from scripts.config import DATA_DIR, SECTOR_FLOW_DIR
 
 def fetch_industry_flow() -> tuple:
     """获取板块资金流向 Top 5（含龙头个股）。
@@ -115,6 +115,109 @@ def detect_flow_anomalies(target_date_str: str, current_df) -> str:
         return ""
 
 
+def detect_cross_session_anomalies(target_date_str: str) -> str:
+    """跨时段异动检测：比较同日的早盘→午盘→收盘板块资金流向快照。
+
+    加载 data/sector_flow/ 下同日不同时段的 CSV 快照，
+    检测连续时段间的资金方向变化：
+    - 净流入→净流出 = ⚠️ 风险
+    - 净流出→净流入 = ↑ 反转
+
+    Returns:
+        markdown section or empty string
+    """
+    if not SECTOR_FLOW_DIR.exists():
+        return ""
+
+    mode_order = ["morning", "noon", "close"]
+    mode_labels = {"morning": "早盘", "noon": "午盘", "close": "收盘"}
+    name_col = "行业"
+    net_col = "净额"
+
+    # 加载所有可用的当日快照
+    snapshots: dict[str, pd.DataFrame] = {}
+    for mode in mode_order:
+        fp = SECTOR_FLOW_DIR / f"{target_date_str}_{mode}.csv"
+        if fp.exists():
+            try:
+                df = pd.read_csv(fp)
+                if name_col in df.columns and net_col in df.columns:
+                    snapshots[mode] = df
+            except Exception:
+                pass
+
+    if len(snapshots) < 2:
+        return ""
+
+    # 用实际存在的快照构建连续对比对
+    available = [m for m in mode_order if m in snapshots]
+    pairs = [(available[i], available[i + 1]) for i in range(len(available) - 1)]
+    if not pairs:
+        return ""
+
+    # 收集所有板块
+    all_sectors: set[str] = set()
+    for df in snapshots.values():
+        all_sectors.update(df[name_col].tolist())
+
+    # 板块 → {时段: 净额}
+    sector_nets: dict[str, dict[str, float]] = {}
+    for sector in all_sectors:
+        sector_nets[sector] = {}
+        for mode, df in snapshots.items():
+            rows = df[df[name_col] == sector]
+            if not rows.empty:
+                sector_nets[sector][mode] = rows[net_col].iloc[0]
+
+    # 逐对检测方向变化
+    table_rows: list[tuple[str, list[str], str]] = []
+    for sector, nets in sector_nets.items():
+        changes: list[str] = []
+        signals: list[str] = []
+
+        for m1, m2 in pairs:
+            v1 = nets.get(m1)
+            v2 = nets.get(m2)
+            if v1 is None or v2 is None:
+                changes.append("—")
+                continue
+            if v1 >= 0 > v2:
+                changes.append("净流入→净流出")
+                signals.append("⚠️ 风险")
+            elif v1 < 0 <= v2:
+                changes.append("净流出→净流入")
+                signals.append("↑ 反转")
+            elif v1 >= 0 and v2 >= 0:
+                changes.append("净流入持续")
+            else:
+                changes.append("净流出持续")
+
+        if not signals:
+            continue
+
+        signal = "⚠️ 风险" if "⚠️ 风险" in signals else "↑ 反转"
+        table_rows.append((sector, changes, signal))
+
+    if not table_rows:
+        return ""
+
+    # 构建 Markdown 表格
+    pair_labels = [f"{mode_labels[p1]}→{mode_labels[p2]}" for p1, p2 in pairs]
+    header_cols = ["板块"] + pair_labels + ["信号"]
+    sep_cols = ["------"] + ["--------"] * len(pair_labels) + ["------"]
+    lines = [
+        "### 跨时段异动监测",
+        "",
+        "| " + " | ".join(header_cols) + " |",
+        "|" + "|".join(sep_cols) + "|",
+    ]
+    for sector, changes, signal in table_rows:
+        row_cols = [sector] + changes + [signal]
+        lines.append("| " + " | ".join(row_cols) + " |")
+
+    return "\n".join(lines)
+
+
 def fetch_industry_flow_with_anomalies(target_date_str: str) -> tuple:
     """获取板块资金流向 Top 5（含龙头个股）并检测资金方向异动。
 
@@ -147,6 +250,13 @@ def fetch_industry_flow_with_anomalies(target_date_str: str) -> tuple:
 
         # 异动检测
         anomaly_section = detect_flow_anomalies(target_date_str, df)
+
+        # 跨时段异动检测（同日早盘→午盘→收盘对比）
+        cross_session = detect_cross_session_anomalies(target_date_str)
+        if anomaly_section and cross_session:
+            anomaly_section = anomaly_section + "\n\n" + cross_session
+        elif cross_session:
+            anomaly_section = cross_session
 
         return table, anomaly_section, None
     except Exception as e:

@@ -4,6 +4,7 @@ core_utils.py — 核心工具函数
 提供 CSV 读取、环比计算、报告组装等可复用基础能力。
 """
 
+import json
 import pandas as pd
 from datetime import date, datetime, timedelta
 from pathlib import Path
@@ -172,7 +173,9 @@ def generate_report(stats: dict, date_str: str,
                     overseas_section: str | None = None,
                     activity_section: str | None = None,
                     individual_flow_table: str | None = None,
-                    us_leader_table: str | None = None) -> str:
+                    us_leader_table: str | None = None,
+                    us_etf_table: str | None = None,
+                    entity_price_table: str | None = None) -> str:
     """组装完整 Markdown 报告。"""
     idx = stats["indices"]
 
@@ -216,6 +219,10 @@ def generate_report(stats: dict, date_str: str,
     overseas_display = f"\n{overseas_section}\n" if overseas_section else ""
     # 美股龙头催化
     us_leader_display = f"\n{us_leader_table}\n" if us_leader_table else ""
+    # 美股板块ETF映射
+    us_etf_display = f"\n### 美股板块映射\n\n{us_etf_table}\n" if us_etf_table else ""
+    # 新闻-个股联动
+    entity_price_display = f"\n### 新闻-个股联动\n\n{entity_price_table}\n" if entity_price_table else ""
     # 市场活跃度
     activity_display = f"\n{activity_section}\n" if activity_section else ""
     # 涨幅榜
@@ -247,6 +254,8 @@ def generate_report(stats: dict, date_str: str,
 
 {us_leader_display}
 
+{us_etf_display}
+{entity_price_display}
 ## 市场活跃度
 
 {activity_display}
@@ -293,6 +302,101 @@ def generate_report(stats: dict, date_str: str,
 ## 总结
 
 {summary}
+"""
+    return report
+
+
+# ---------------------------------------------------------------------------
+# 深度报告（deep report）工具
+# ---------------------------------------------------------------------------
+
+DEEP_DATA_DIR = Path(__file__).resolve().parent.parent / "data" / "deep"
+
+WEEKDAY_CN = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"]
+
+SECTION_ORDER = [
+    ("news_interpretation", "一、新闻解读"),
+    ("index_panorama", "二、指数全景"),
+    ("limit_pool", "三、涨停跌停全景"),
+    ("theme_analysis", "四、主线结构分析"),
+    ("fund_flow_analysis", "五、主力资金 TOP10"),
+    ("market_sentiment", "六、市场情绪"),
+    ("opportunity_risk", "七、机会与风险"),
+    ("core_judgment", "八、核心判断"),
+    ("four_dimension", "九、四维穿透分析"),
+]
+
+
+def read_deep_json(date_str: str) -> dict | None:
+    """从 data/deep/{date_str}.json 读取深度数据。
+
+    Returns:
+        解析后的 dict；文件不存在或 JSON 无效时返回 None。
+    """
+    deep_path = DEEP_DATA_DIR / f"{date_str}.json"
+    if not deep_path.exists():
+        return None
+    try:
+        with open(deep_path, "r", encoding="utf-8") as fh:
+            return json.load(fh)
+    except (json.JSONDecodeError, OSError):
+        return None
+
+
+def assemble_deep_report(date_str: str, sections: dict, errors: list[str]) -> str:
+    """将各分析模块的输出组装为深度报告 Markdown。
+
+    Args:
+        date_str: 日期字符串 YYYY-MM-DD。
+        sections: {section_key: markdown_text}，键名参见 SECTION_ORDER。
+        errors: 数据异常描述列表。
+
+    Returns:
+        完整 Markdown 字符串。
+    """
+    # 星期几
+    try:
+        dt = datetime.strptime(date_str, "%Y-%m-%d")
+        wday = WEEKDAY_CN[dt.weekday()]
+    except (ValueError, IndexError):
+        wday = ""
+
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M")
+
+    # 按顺序拼接章节
+    section_blocks: list[str] = []
+    for key, heading in SECTION_ORDER:
+        content = sections.get(key)
+        if content and content.strip():
+            section_blocks.append(content.strip())
+        else:
+            # 缺失时用占位
+            section_blocks.append(f"{heading}\n\n*数据获取失败，该章节跳过*")
+
+    body = "\n\n".join(section_blocks)
+
+    # 错误备注
+    if errors:
+        error_lines = "\n".join(f"- {e}" for e in errors)
+        error_section = f"## 数据异常备注\n\n{error_lines}\n"
+    else:
+        error_section = "## 数据异常备注\n\n无\n"
+
+    report = f"""# A 股深度分析 — {date_str}（{wday}）
+
+> 生成时间: {now_str}
+> 数据来源: CSV 收盘快照 / AkShare 板块资金流 / 个股资金流 / 美股映射
+
+{body}
+
+---
+
+{error_section}
+
+---
+
+## 免责声明
+本报告基于公开数据自动生成，仅供参考，不构成投资建议。市场有风险，投资需谨慎。历史数据不代表未来表现。
 """
     return report
 

@@ -49,6 +49,8 @@ from scripts.headlines import fetch_driven_news
 from scripts.top_gainers import fetch_top_gainers, fetch_top_losers
 from scripts.market_activity import fetch_market_activity
 from scripts.individual_flow import fetch_individual_flow
+from scripts.us_market import fetch_us_sector_etfs
+from scripts.headlines import build_entity_price_table
 
 
 def main():
@@ -57,6 +59,8 @@ def main():
                         help="交易日期 (YYYY-MM-DD)，默认今天")
     parser.add_argument("--csv", type=str, default=None,
                         help="CSV 文件路径，默认 data/{date}.csv")
+    parser.add_argument("--deep", action="store_true",
+                        help="同时生成深度分析报告")
     args = parser.parse_args()
 
     # 确定日期
@@ -197,6 +201,22 @@ def main():
     else:
         print("OK")
 
+    # 获取美股板块ETF映射
+    print("正在获取美股板块ETF映射...", end=" ", flush=True)
+    us_etf_table, us_etf_error = fetch_us_sector_etfs(date_str)
+    if us_etf_error:
+        print(f"[跳过] {us_etf_error}")
+    else:
+        print("OK")
+
+    # 获取新闻-个股联动表
+    print("正在生成新闻-个股联动表...", end=" ", flush=True)
+    entity_price_table, entity_price_error = build_entity_price_table(date_str)
+    if entity_price_error:
+        print(f"[跳过] {entity_price_error}")
+    else:
+        print("OK")
+
     # 生成总结
     summary = generate_summary(stats, industry_error, northbound_error,
                                us_error, cny_error, driven_news_error, gainers_error,
@@ -220,6 +240,8 @@ def main():
         activity_section=activity_section,
         individual_flow_table=individual_flow_table,
         us_leader_table=us_leader_table,
+        us_etf_table=us_etf_table,
+        entity_price_table=entity_price_table,
     )
 
     # 打印
@@ -232,6 +254,21 @@ def main():
     report_path = REPORTS_DIR / f"{date_str}.md"
     report_path.write_text(report, encoding="utf-8")
     print(f"报告已保存: {report_path.resolve()}")
+
+    # 尝试生成深度报告（收盘后）
+    if args.deep:
+        print("\n正在尝试生成深度报告...")
+        try:
+            from scripts.generate_deep_report import main as generate_deep
+            import sys as _sys
+            _orig_argv = _sys.argv[:]
+            _sys.argv = ["generate_deep_report.py", "--date", date_str]
+            generate_deep()
+            _sys.argv = _orig_argv
+        except Exception as e:
+            print(f"[跳过] 深度报告生成失败: {e}")
+    else:
+        print("\n使用 --deep 参数可同时生成深度分析报告")
 
 
 if __name__ == "__main__":

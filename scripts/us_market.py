@@ -3,11 +3,13 @@ us_market.py — 美股行情数据获取
 
 提供:
   - fetch_us_market: 美股三大指数 (SPY, QQQ, DIA)
-  - fetch_us_leader_stocks: 美股龙头催化 (NVDA, AMD, AAPL, TSLA, TSM)
+  - fetch_us_leader_stocks: 美股龙头催化 (15-20只，分三大类)
+  - fetch_us_sector_etfs: 美股行业 ETF → A 股映射 (10只)
   - fetch_overseas_headlines: 海外相关头条筛选
 """
 
 import akshare as ak
+from scripts.knowledge_base import US_LEADER_STOCKS, US_SECTOR_ETFS
 
 
 def fetch_us_market(target_date_str: str) -> tuple:
@@ -58,47 +60,132 @@ def fetch_us_market(target_date_str: str) -> tuple:
         return None, f"美股行情获取失败: {e}"
 
 
+def _stock_direction_emoji(change: float | None) -> str:
+    """将涨跌幅转为方向 emoji。"""
+    if change is None:
+        return "-"
+    if change > 0:
+        return "🟢"
+    if change < 0:
+        return "🔴"
+    return "⚪"
+
+
 def fetch_us_leader_stocks(target_date_str: str) -> tuple:
-    """获取美股龙头股（NVDA/AMD/AAPL/TSLA/TSM）当日行情及 A 股映射方向。
+    """获取美股龙头股当日行情及 A 股映射方向，按大类分组展示。
+
+    使用 US_LEADER_STOCKS 知识库（20只），分三大类：
+      - 科技半导体链 (NVDA, AMD, AVGO, TSM, ASML, MU, INTC)
+      - 消费科技链 (AAPL, TSLA, AMZN, MSFT, GOOGL, META)
+      - 中概&映射敏感 (BABA, PDD, JD, BIDU, NIO, LI, XPEV)
 
     Returns:
         (markdown_table_or_None, error_str_or_None)
     """
     try:
-        leaders = {
-            "NVDA": "英伟达",
-            "AMD": "AMD",
-            "AAPL": "苹果",
-            "TSLA": "特斯拉",
-            "TSM": "台积电",
+        # 按 category 分组（保持知识库中定义的顺序）
+        category_order = ["科技半导体", "消费科技", "中概映射"]
+        category_labels = {
+            "科技半导体": "### 科技半导体链",
+            "消费科技": "### 消费科技链",
+            "中概映射": "### 中概&映射敏感",
         }
-        mapping = {
-            "NVDA": "AI 算力/光模块/液冷",
-            "AMD": "CPU 链/服务器",
-            "AAPL": "消费电子/果链",
-            "TSLA": "智能驾驶/机器人",
-            "TSM": "半导体/芯片",
-        }
-        lines = [
-            "| 个股 | 收盘价 | 涨跌幅 | A 股映射 |",
-            "|------|--------|--------|----------|",
-        ]
-        for symbol, name in leaders.items():
-            df = ak.stock_us_daily(symbol)
-            # DataFrame 按日期升序排列，取最后一行即最近交易日
-            if df is None or df.empty:
-                lines.append(f"| {name} | - | - | {mapping.get(symbol, '')} |")
+        grouped: dict[str, list[tuple[str, dict]]] = {cat: [] for cat in category_order}
+        for symbol, info in US_LEADER_STOCKS.items():
+            cat = info.get("category", "")
+            if cat in grouped:
+                grouped[cat].append((symbol, info))
+
+        header = "| 个股 | 收盘价 | 涨跌幅 | 方向 | A 股映射 |"
+        sep = "|------|--------|--------|------|----------|"
+
+        sections: list[str] = []
+        for cat in category_order:
+            stocks = grouped[cat]
+            if not stocks:
                 continue
+            lines = [category_labels.get(cat, f"### {cat}"), header, sep]
+            for symbol, info in stocks:
+                name_cn = info.get("name_cn", symbol)
+                mapping_text = info.get("a_share_mapping", "")
+                display = f"{name_cn}({symbol})"
+
+                # 抓取行情
+                try:
+                    df = ak.stock_us_daily(symbol)
+                except Exception:
+                    df = None
+
+                if df is None or df.empty:
+                    lines.append(
+                        f"| {display} | - | - | - | {mapping_text} |"
+                    )
+                    continue
+
+                r = df.iloc[-1]
+                close = float(r["close"])
+                change = (close - float(r["open"])) / float(r["open"]) * 100
+                change_str = f"+{change:.2f}%" if change >= 0 else f"{change:.2f}%"
+                direction = _stock_direction_emoji(change)
+
+                lines.append(
+                    f"| {display} | {close:.2f} | {change_str} | {direction} | {mapping_text} |"
+                )
+            sections.append("\n".join(lines))
+
+        if not sections:
+            return None, "美股龙头行情：无数据"
+
+        return "\n\n".join(sections), None
+    except Exception as e:
+        return None, f"美股龙头行情获取失败: {e}"
+
+
+def fetch_us_sector_etfs(target_date_str: str) -> tuple:
+    """获取美股行业 ETF 行情并输出 A 股映射判断。
+
+    使用 US_SECTOR_ETFS 知识库（10只 ETF）：
+      SMH, QQQ, XLE, XLV, XLY, XLF, TAN, XBI, GDX, KWEB
+    每只 ETF 包含板块描述和 A 股映射的方向逻辑说明。
+
+    Returns:
+        (markdown_table_or_None, error_str_or_None)
+    """
+    try:
+        lines = [
+            "### 美股板块映射",
+            "| 板块 ETF | 涨跌幅 | 方向 | A 股映射判断 |",
+            "|----------|--------|------|-------------|",
+        ]
+        for symbol, info in US_SECTOR_ETFS.items():
+            name = info.get("name", symbol)
+            direction_logic = info.get("direction_logic", "")
+            display = f"{name}({symbol})"
+
+            # 抓取行情
+            try:
+                df = ak.stock_us_daily(symbol)
+            except Exception:
+                df = None
+
+            if df is None or df.empty:
+                lines.append(
+                    f"| {display} | - | - | {direction_logic} |"
+                )
+                continue
+
             r = df.iloc[-1]
             close = float(r["close"])
             change = (close - float(r["open"])) / float(r["open"]) * 100
             change_str = f"+{change:.2f}%" if change >= 0 else f"{change:.2f}%"
+            direction = _stock_direction_emoji(change)
+
             lines.append(
-                f"| {name} | {close:.2f} | {change_str} | {mapping.get(symbol, '')} |"
+                f"| {display} | {change_str} | {direction} | {direction_logic} |"
             )
         return "\n".join(lines), None
     except Exception as e:
-        return None, f"美股龙头行情获取失败: {e}"
+        return None, f"美股板块ETF行情获取失败: {e}"
 
 
 def fetch_overseas_headlines() -> tuple:

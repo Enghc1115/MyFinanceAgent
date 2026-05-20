@@ -11,6 +11,7 @@ import os
 import glob
 import akshare as ak
 import pandas as pd
+from scripts.knowledge_base import STOCK_NAME_DICT, COMPANY_KEYWORDS
 
 
 def _clear_akshare_cache():
@@ -27,50 +28,8 @@ def _clear_akshare_cache():
 # Entity Extraction Keywords
 # ============================================================
 
-# 常见 A 股公司简称（高频讨论的龙头/热门股）
-COMPANY_KEYWORDS: list[str] = [
-    # 白酒/食品
-    "贵州茅台", "五粮液", "泸州老窖", "山西汾酒", "洋河股份",
-    "伊利股份", "海天味业", "双汇发展", "牧原股份",
-    # 新能源/汽车
-    "宁德时代", "比亚迪", "阳光电源", "隆基绿能", "通威股份",
-    "TCL中环", "亿纬锂能", "赣锋锂业", "天齐锂业", "恩捷股份",
-    "先导智能", "国轩高科", "拓普集团", "赛力斯", "长城汽车",
-    "长安汽车", "上汽集团", "吉利汽车",
-    # 半导体/芯片
-    "中芯国际", "北方华创", "中微公司", "韦尔股份", "兆易创新",
-    "紫光国微", "长电科技", "卓胜微", "圣邦股份", "北京君正",
-    "华大九天", "澜起科技", "寒武纪", "海光信息",
-    # 消费电子
-    "立讯精密", "歌尔股份", "蓝思科技", "领益智造", "工业富联",
-    # 医药
-    "药明康德", "恒瑞医药", "迈瑞医疗", "智飞生物", "长春高新",
-    "复星医药", "康龙化成", "泰格医药", "凯莱英", "片仔癀",
-    "百济神州", "爱尔眼科", "通策医疗",
-    # 金融
-    "中国平安", "招商银行", "兴业银行", "东方财富", "同花顺",
-    "中信证券", "华泰证券", "中国太保", "中国人寿", "工商银行",
-    "建设银行", "农业银行", "交通银行", "平安银行",
-    # 地产/基建
-    "万科A", "保利发展", "三一重工", "海螺水泥", "东方雨虹",
-    # 家电
-    "美的集团", "格力电器", "海尔智家",
-    # 消费
-    "中国中免", "珀莱雅", "泡泡玛特",
-    # 科技/AI
-    "海康威视", "科大讯飞", "金山办公", "用友网络", "浪潮信息",
-    "中科曙光", "三六零",
-    # 资源/能源
-    "紫金矿业", "中国神华", "陕西煤业", "长江电力", "中国石油",
-    "中国石化", "中海油", "洛阳钼业",
-    # 军工
-    "中航沈飞", "航发动力", "中国船舶", "中航西飞",
-    # 通信
-    "中兴通讯", "中国移动", "中国联通", "中国电信",
-    # 其他
-    "顺丰控股", "分众传媒", "福耀玻璃", "万华化学", "宝钢股份",
-    "汇川技术", "恒生电子", "广联达",
-]
+# COMPANY_KEYWORDS 从 scripts.knowledge_base 导入（基于 STOCK_NAME_DICT 的 129 只核心股票）
+# SECTOR_KEYWORDS 保留硬编码（板块/概念关键词，用于新闻文本匹配）
 
 # 板块/概念关键词
 SECTOR_KEYWORDS: list[str] = [
@@ -253,7 +212,7 @@ def _deduplicate(news_items: list[dict]) -> list[dict]:
 # ============================================================
 
 def _extract_entities(text: str) -> dict[str, list[str]]:
-    """从文本中提取实体。
+    """从文本中提取实体，并通过 STOCK_NAME_DICT 补充代码与板块信息。
 
     Returns:
         {"companies": [...], "sectors": [...], "codes": [...]}
@@ -266,21 +225,31 @@ def _extract_entities(text: str) -> dict[str, list[str]]:
 
     t = str(text)
 
-    # 公司名匹配（从长到短排序，减少子串误匹配）
-    sorted_companies = sorted(COMPANY_KEYWORDS, key=len, reverse=True)
-    for kw in sorted_companies:
+    # 公司名匹配（COMPANY_KEYWORDS 已从 knowledge_base 按长度降序排列）
+    for kw in COMPANY_KEYWORDS:
         if kw in t:
             result["companies"].append(kw)
+            # 从知识库补充代码和板块信息
+            info = STOCK_NAME_DICT.get(kw)
+            if info:
+                code = info.get("code", "")
+                sector = info.get("sector", "")
+                if code and code not in result["codes"]:
+                    result["codes"].append(code)
+                if sector and sector not in result["sectors"]:
+                    result["sectors"].append(sector)
 
-    # 板块/概念匹配
+    # 板块/概念匹配（从长到短排序，减少子串误匹配）
     sorted_sectors = sorted(SECTOR_KEYWORDS, key=len, reverse=True)
     for kw in sorted_sectors:
-        if kw in t:
+        if kw in t and kw not in result["sectors"]:
             result["sectors"].append(kw)
 
     # 股票代码匹配
     codes = _STOCK_CODE_RE.findall(t)
-    result["codes"] = list(dict.fromkeys(codes))  # 去重保序
+    for code in codes:
+        if code not in result["codes"]:
+            result["codes"].append(code)
 
     return result
 
@@ -483,5 +452,105 @@ def fetch_driven_news() -> tuple[str | None, str | None]:
             f"| {title} | {n['source']} | {n['entities_str']} "
             f"| {n['score']:.1f} | {pct_str} |"
         )
+
+    return "\n".join(lines), None
+
+
+def build_entity_price_table(date_str: str = None) -> tuple[str | None, str | None]:
+    """构建「新闻 → 关联个股 → 涨跌幅」映射表。
+
+    与 fetch_driven_news() 的区别：
+    - fetch_driven_news() 按股价联动评分排序，仅展示 |涨跌幅| > 2% 的驱动新闻
+    - build_entity_price_table() 不设阈值，纯粹展示「哪些个股上了新闻、涨跌如何」
+
+    用途：为深度分析报告提供「新闻-个股」事实映射，不做评分筛选。
+
+    Args:
+        date_str: 日期字符串（保留参数，当前使用实时数据）
+
+    Returns:
+        (markdown_table_or_None, error_str_or_None)
+    """
+    # 1. 多源聚合
+    all_news, errors = _fetch_all_news()
+
+    if not all_news:
+        err_msg = "; ".join(errors) if errors else "所有数据源均无数据"
+        return None, err_msg
+
+    # 2. 去重
+    all_news = _deduplicate(all_news)
+
+    # 3. 获取实时行情
+    quotes_df, quote_err = _get_realtime_quotes()
+    if quote_err:
+        return None, f"无法获取实时行情: {quote_err}"
+
+    # 4. 构建查找表
+    name_lookup = _build_name_lookup(quotes_df)
+    code_lookup = _build_code_lookup(quotes_df)
+
+    # 5. 逐条新闻匹配个股涨跌
+    rows: list[dict] = []
+    seen_pairs: set[tuple[str, str]] = set()  # (title_prefix, stock_name) 去重
+
+    for item in all_news:
+        text = item["title"] + " " + item.get("content", "")
+        entities = _extract_entities(text)
+
+        matched_stocks: dict[str, dict] = {}  # code -> {name, change}
+
+        # 公司名匹配
+        for comp in entities["companies"]:
+            row = name_lookup.get(comp)
+            if row is not None:
+                code = str(row.get("代码", "")).strip()
+                if code:
+                    matched_stocks[code] = {
+                        "name": str(row.get("名称", comp)).strip(),
+                        "change": float(row.get("涨跌幅", 0) or 0),
+                    }
+
+        # 股票代码匹配
+        for code in entities["codes"]:
+            if code not in matched_stocks:
+                row = code_lookup.get(code)
+                if row is not None:
+                    matched_stocks[code] = {
+                        "name": str(row.get("名称", "")).strip(),
+                        "change": float(row.get("涨跌幅", 0) or 0),
+                    }
+
+        # 为每对 (新闻, 个股) 生成一行
+        title = item["title"]
+        for code, stock in matched_stocks.items():
+            pair = (title[:40], stock["name"])
+            if pair in seen_pairs:
+                continue
+            seen_pairs.add(pair)
+
+            change = stock["change"]
+            rows.append({
+                "title": title,
+                "stock_name": stock["name"],
+                "change": change,
+            })
+
+    # 6. 格式化输出
+    if not rows:
+        return "_今日新闻中未匹配到关联个股_", None
+
+    # 按涨跌幅绝对值降序排列
+    rows.sort(key=lambda x: abs(x["change"]), reverse=True)
+
+    lines = [
+        "| 新闻标题 | 关联个股 | 涨跌幅 |",
+        "|----------|----------|--------|",
+    ]
+    for r in rows[:30]:  # 最多展示 30 条
+        short_title = r["title"][:55] + "..." if len(r["title"]) > 55 else r["title"]
+        pct = r["change"]
+        pct_str = f"+{pct:.2f}%" if pct >= 0 else f"{pct:.2f}%"
+        lines.append(f"| {short_title} | {r['stock_name']} | {pct_str} |")
 
     return "\n".join(lines), None

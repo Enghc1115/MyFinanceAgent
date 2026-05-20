@@ -12,3 +12,10 @@ INDICES_CONFIG = [
     ("kc50", "sh000688", "科创50"),
     ("bj50", "bj899050", "北证50"),
 ]
+
+DEEP_REPORTS_DIR = REPORTS_DIR / "deep"
+SLIDES_DIR = REPORTS_DIR / "slides"
+DEEP_DATA_DIR = DATA_DIR / "deep"
+SECTOR_FLOW_DIR = DATA_DIR / "sector_flow"
+ARCHIVE_DIR = DATA_DIR / "archive"
+LOGS_DIR = PROJECT_ROOT / "logs"

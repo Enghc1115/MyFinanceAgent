@@ -86,6 +86,10 @@ echo "[$SLOT_LABEL] 今日为交易日，继续..."
 # ---------- 分时段执行 ----------
 
 REPORT_SCRIPT="$PROJECT_DIR/scripts/generate_report.py"
+PREP_DEEP_SCRIPT="$PROJECT_DIR/scripts/prep_deep_data.py"
+DEEP_REPORT_SCRIPT="$PROJECT_DIR/scripts/generate_deep_report.py"
+SLIDES_SCRIPT="$PROJECT_DIR/scripts/report_to_slides.py"
+ARCHIVER_SCRIPT="$PROJECT_DIR/scripts/data_archiver.py"
 
 case "$SLOT" in
     morning)
@@ -96,8 +100,18 @@ case "$SLOT" in
         ;;
     close)
         "$VENV_PYTHON" "$FETCH_SCRIPT" --mode close --save && \
+        echo "[$SLOT_LABEL] 正在准备深度数据..." && \
+        "$VENV_PYTHON" "$PREP_DEEP_SCRIPT" && \
         echo "[$SLOT_LABEL] 正在生成日度简报..." && \
-        "$VENV_PYTHON" "$REPORT_SCRIPT"
+        "$VENV_PYTHON" "$REPORT_SCRIPT" && \
+        echo "[$SLOT_LABEL] 正在生成深度报告..." && \
+        "$VENV_PYTHON" "$DEEP_REPORT_SCRIPT" --date $(date +%Y-%m-%d) || \
+        echo "[$SLOT_LABEL] 深度报告生成失败（不影响日度简报）" && \
+        echo "[$SLOT_LABEL] 正在生成HTML幻灯片..." && \
+        "$VENV_PYTHON" "$SLIDES_SCRIPT" $(date +%Y-%m-%d) || \
+        echo "[$SLOT_LABEL] 幻灯片生成失败" && \
+        echo "[$SLOT_LABEL] 正在检查月度归档..." && \
+        "$VENV_PYTHON" "$ARCHIVER_SCRIPT" || true
         ;;
 esac
 
