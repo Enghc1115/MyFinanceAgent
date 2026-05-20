@@ -8,7 +8,7 @@ from pathlib import Path
 
 import akshare as ak
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from config import DATA_DIR, PROJECT_ROOT
 from scripts.knowledge_base import US_SECTOR_ETFS, US_LEADER_STOCKS
 

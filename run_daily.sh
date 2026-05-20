@@ -101,7 +101,7 @@ case "$SLOT" in
     close)
         "$VENV_PYTHON" "$FETCH_SCRIPT" --mode close --save && \
         echo "[$SLOT_LABEL] 正在准备深度数据..." && \
-        "$VENV_PYTHON" "$PREP_DEEP_SCRIPT" && \
+        ("$VENV_PYTHON" "$PREP_DEEP_SCRIPT" || echo "[$SLOT_LABEL] 深度数据准备失败（不影响后续）") && \
         echo "[$SLOT_LABEL] 正在生成日度简报..." && \
         "$VENV_PYTHON" "$REPORT_SCRIPT" && \
         echo "[$SLOT_LABEL] 正在生成深度报告..." && \
