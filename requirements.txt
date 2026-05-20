@@ -1,3 +1,0 @@
-akshare==1.18.60
-pandas==3.0.2
-requests==2.33.1
